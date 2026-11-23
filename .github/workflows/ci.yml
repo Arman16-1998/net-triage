@@ -10,8 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: shellcheck
-        run: shellcheck -S warning net-triage.sh tests/run-tests.sh tests/stubs/*
+        run: |
+          shellcheck --version
+          # gcc format -> GitHub annotations, so findings show on the run page
+          shellcheck -S warning -f gcc net-triage.sh tests/run-tests.sh tests/stubs/* > shellcheck.txt || rc=$?
+          sed -E 's/^([^:]+):([0-9]+):([0-9]+): [a-z]+: (.*)$/::error file=\1,line=\2,col=\3::\4/' shellcheck.txt
+          exit "${rc:-0}"
       - name: tests
         run: ./tests/run-tests.sh
       - name: smoke test against a real host
-        run: ./net-triage.sh --no-color -p 443 github.com || true
+        run: ./net-triage.sh --no-color -p 443 --trace github.com || true

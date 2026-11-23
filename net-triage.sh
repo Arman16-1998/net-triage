@@ -76,7 +76,7 @@ is_int()  { [[ $1 =~ ^[0-9]+$ ]]; }
 is_ipv4() { [[ $1 =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; }
 is_ipv6() { [[ $1 == *:* && $1 =~ ^[0-9A-Fa-f:.]+$ ]]; }
 is_ip()   { is_ipv4 "$1" || is_ipv6 "$1"; }
-want()    { [[ ,$CHECKS, == *,$1,* ]]; }
+want()    { [[ ,$CHECKS, == *,"$1",* ]]; }
 
 now_ms() {
   local t
@@ -143,7 +143,7 @@ record() {
 
 # ---------------------------------------------------------------- target
 parse_target() {
-  local t=$1 url_port="" scheme rest
+  local t=$1 url_port="" scheme="" rest=""
   if [[ $t == *://* ]]; then
     scheme=${t%%://*}; t=${t#*://}; t=${t%%/*}; t=${t##*@}
     if [[ $t == \[* ]]; then                       # [v6]:port
@@ -163,7 +163,7 @@ parse_target() {
   [[ -n $HOST ]] || die "could not parse target '$1'"
   if [[ -n $url_port ]]; then
     is_int "$url_port" || die "bad port in URL: $url_port"
-    [[ ,$PORTS, == *,$url_port,* ]] || PORTS="${PORTS:+$PORTS,}$url_port"
+    [[ ,$PORTS, == *,"$url_port",* ]] || PORTS="${PORTS:+$PORTS,}$url_port"
     [[ $scheme == https && -z $TLS_PORT ]] && TLS_PORT=$url_port
   fi
   : "${TLS_PORT:=443}"
@@ -239,7 +239,8 @@ check_route() {
 
   local first type="unicast" via="" dev="" src=""
   first=$(head -1 <<<"$out")
-  local f; read -r -a f <<<"$first"
+  local -a f
+  read -r -a f <<<"$first"
   case ${f[0]} in local|unreachable|blackhole|prohibit|throw) type=${f[0]} ;; esac
   local i
   for (( i = 0; i < ${#f[@]} - 1; i++ )); do
