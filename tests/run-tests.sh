@@ -33,8 +33,8 @@ check() { printf '.checks[] | select(.name == "%s")' "$1"; }
 free_port() { python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1])'; }
 
 wait_port() {
-  local i
-  for i in $(seq 50); do
+
+  for _ in $(seq 50); do
     (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null && return 0
     sleep 0.1
   done

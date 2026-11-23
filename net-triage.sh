@@ -217,7 +217,8 @@ check_dns() {
   msg="resolved in ${ms} ms (A: $n4, AAAA: $n6), using $IP"
   if (( ms > DNS_WARN_MS )); then status=WARN; msg="slow DNS: $msg"; fi
 
-  local detail="addresses: $(paste -sd' ' <<<"$addrs")"
+  local detail
+  detail="addresses: $(paste -sd' ' <<<"$addrs")"
   [[ -n $canon ]] && detail+=$'\n'"canonical name: $canon"
   [[ -n $resolvers ]] && detail+=$'\n'"resolvers: $(paste -sd' ' <<<"$resolvers")"
 
@@ -323,7 +324,7 @@ check_mtu() {
   (( FAMILY == 6 )) && { overhead=48; min_mtu=1280; }
 
   local test
-  test=$(LC_ALL=C ping_cmd -n -c 1 -W "$TIMEOUT" -M do -s 56 "$IP" 2>&1)
+  test=$(LC_ALL=C ping_cmd -n -c 1 -W "$TIMEOUT" -M "do" -s 56 "$IP" 2>&1)
   if grep -qiE 'invalid|unrecognized|illegal|usage' <<<"$test"; then
     record mtu SKIP "this ping does not support -M do (needs iputils)"; return
   fi
@@ -331,7 +332,7 @@ check_mtu() {
   local probes=0
   probe() {   # probe <payload bytes>; 2 packets so one random drop doesn't count
     (( probes++ ))
-    LC_ALL=C ping_cmd -n -q -c 2 -i 0.2 -W "$TIMEOUT" -M do -s "$1" "$IP" >/dev/null 2>&1
+    LC_ALL=C ping_cmd -n -q -c 2 -i 0.2 -W "$TIMEOUT" -M "do" -s "$1" "$IP" >/dev/null 2>&1
   }
 
   local top=1500

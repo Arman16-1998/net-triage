@@ -9,7 +9,7 @@ while (( $# )); do
   case $1 in
     -c) count=$2; shift ;; -s) size=$2; shift ;;
     -M) [[ ${STUB_NO_M:-0} == 1 ]] && { echo "ping: invalid option -- 'M'"; exit 2; }
-        [[ $2 == do ]] && df=1; shift ;;
+        [[ $2 == "do" ]] && df=1; shift ;;
     -i|-W|-w) shift ;; -*) ;; *) target=$1 ;;
   esac
   shift
