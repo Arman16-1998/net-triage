@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Fake iproute2 for tests.
+#   STUB_ROUTE  normal | unreachable | direct   (default normal)
+#   STUB_IFMTU  interface MTU                    (default 1500)
+case "$*" in
+  "route get "*)
+    dst=$3
+    case ${STUB_ROUTE:-normal} in
+      unreachable) echo "RTNETLINK answers: Network is unreachable" >&2; exit 2 ;;
+      direct) echo "$dst dev eth0 src 192.168.1.20 uid 1000" ;;
+      *)      echo "$dst via 192.168.1.1 dev eth0 src 192.168.1.20 uid 1000" ;;
+    esac
+    echo "    cache" ;;
+  "-o link show dev "*)
+    echo "2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu ${STUB_IFMTU:-1500} qdisc fq_codel state UP mode DEFAULT group default qlen 1000" ;;
+  *) echo "ip stub: unsupported: $*" >&2; exit 1 ;;
+esac

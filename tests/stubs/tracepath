@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Fake tracepath for tests. STUB_TRACE_REACHED=0 to simulate an unreachable target.
+dst=${!#}
+echo " 1?: [LOCALHOST]                      pmtu 1500"
+echo " 1:  192.168.1.1                                           0.512ms"
+echo " 1:  192.168.1.1                                           0.430ms"
+echo " 2:  10.20.0.1                                             4.120ms"
+if [[ ${STUB_TRACE_REACHED:-1} == 1 ]]; then
+  echo " 3:  $dst                                          9.870ms reached"
+  echo "     Resume: pmtu 1500 hops 3 back 3"
+else
+  echo " 3:  no reply"
+  echo "     Too many hops: pmtu 1500"
+fi

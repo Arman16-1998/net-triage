@@ -1,0 +1,17 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck -S warning net-triage.sh tests/run-tests.sh tests/stubs/*
+      - name: tests
+        run: ./tests/run-tests.sh
+      - name: smoke test against a real host
+        run: ./net-triage.sh --no-color -p 443 github.com || true

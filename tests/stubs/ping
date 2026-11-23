@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Fake iputils ping for tests.
+#   STUB_LOSS  packet loss %          (default 0)
+#   STUB_AVG   average rtt in ms      (default 0.045)
+#   STUB_PMTU  path MTU for -M do     (default 1500)
+#   STUB_NO_M  1 = behave like a ping without -M support
+count=1 size=56 df=0 target=""
+while (( $# )); do
+  case $1 in
+    -c) count=$2; shift ;; -s) size=$2; shift ;;
+    -M) [[ ${STUB_NO_M:-0} == 1 ]] && { echo "ping: invalid option -- 'M'"; exit 2; }
+        [[ $2 == do ]] && df=1; shift ;;
+    -i|-W|-w) shift ;; -*) ;; *) target=$1 ;;
+  esac
+  shift
+done
+loss=${STUB_LOSS:-0}
+if (( df )) && (( size + 28 > ${STUB_PMTU:-1500} )); then
+  echo "ping: local error: message too long, mtu=${STUB_PMTU:-1500}"; loss=100
+fi
+recv=$(( count * (100 - loss) / 100 ))
+echo "PING $target ($target) $size($((size + 28))) bytes of data."
+echo
+echo "--- $target ping statistics ---"
+echo "$count packets transmitted, $recv received, $loss% packet loss, time 800ms"
+if (( recv > 0 )); then
+  avg=${STUB_AVG:-0.045}
+  echo "rtt min/avg/max/mdev = 0.031/$avg/0.061/0.010 ms"; exit 0
+fi
+exit 1
